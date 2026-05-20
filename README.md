@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="banner.svg" alt="SecSync Banner" width="100%"/>
+  <img src="banner.svg" alt="PrivShare Banner" width="100%"/>
 </p>
 
-# SecSync — Privacy-Preserving File Sharing
+# PrivShare — Privacy-Preserving File Sharing
 
 A no-signup, password-protected file sharing web app. Upload a file, set a password, get a share link. The system strips metadata, encrypts the file, and the receiver needs both the link and the password to decrypt.
 
@@ -89,8 +89,8 @@ gunicorn -w 2 -b 0.0.0.0:5000 app:app
 ## Docker
 
 ```bash
-docker build -t secsync .
-docker run -p 8000:8000 --env-file .env secsync
+docker build -t privshare .
+docker run -p 8000:8000 --env-file .env privshare
 ```
 
 ## CLI Commands
