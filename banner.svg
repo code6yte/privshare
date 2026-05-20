@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="280" viewBox="0 0 1280 280">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117"/>
+      <stop offset="50%" style="stop-color:#161b22"/>
+      <stop offset="100%" style="stop-color:#0d1117"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#58a6ff"/>
+      <stop offset="100%" style="stop-color:#3fb950"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#21262d" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="280" fill="url(#bg)"/>
+  <rect width="1280" height="280" fill="url(#grid)" opacity="0.5"/>
+
+  <!-- Left accent line -->
+  <rect x="0" y="0" width="4" height="280" fill="url(#accent)"/>
+
+  <!-- Shield icon -->
+  <g transform="translate(140, 60)" filter="url(#glow)">
+    <path d="M60 0 L120 25 L120 80 C120 120 85 155 60 170 C35 155 0 120 0 80 L0 25 Z" fill="none" stroke="url(#accent)" stroke-width="3"/>
+    <!-- Lock body -->
+    <rect x="35" y="65" width="50" height="40" rx="6" fill="url(#accent)" opacity="0.9"/>
+    <!-- Lock shackle -->
+    <path d="M45 65 L45 50 C45 38 75 38 75 50 L75 65" fill="none" stroke="url(#accent)" stroke-width="4" stroke-linecap="round"/>
+    <!-- Keyhole -->
+    <circle cx="60" cy="80" r="5" fill="#0d1117"/>
+    <rect x="58" y="82" width="4" height="12" rx="2" fill="#0d1117"/>
+  </g>
+
+  <!-- Title -->
+  <text x="320" y="100" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="700" fill="#f0f6fc">PrivShare</text>
+
+  <!-- Subtitle -->
+  <text x="320" y="145" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#8b949e">Privacy-Preserving File Sharing</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(320, 170)">
+    <!-- Pill 1 -->
+    <rect x="0" y="0" width="130" height="30" rx="15" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="65" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#58a6ff" text-anchor="middle">AES-256-GCM</text>
+
+    <!-- Pill 2 -->
+    <rect x="145" y="0" width="150" height="30" rx="15" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="220" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#3fb950" text-anchor="middle">Metadata Clean</text>
+
+    <!-- Pill 3 -->
+    <rect x="310" y="0" width="130" height="30" rx="15" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="375" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#d2a8ff" text-anchor="middle">No Signup</text>
+
+    <!-- Pill 4 -->
+    <rect x="455" y="0" width="140" height="30" rx="15" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="525" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#f0883e" text-anchor="middle">PBKDF2 Key</text>
+
+    <!-- Pill 5 -->
+    <rect x="610" y="0" width="130" height="30" rx="15" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="675" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#f778ba" text-anchor="middle">Link Expiry</text>
+  </g>
+
+  <!-- Right side: file icons -->
+  <g transform="translate(1080, 60)" opacity="0.15">
+    <rect x="0" y="0" width="60" height="75" rx="4" fill="none" stroke="#58a6ff" stroke-width="2"/>
+    <text x="30" y="45" font-family="monospace" font-size="14" fill="#58a6ff" text-anchor="middle">.pdf</text>
+
+    <rect x="80" y="20" width="60" height="75" rx="4" fill="none" stroke="#3fb950" stroke-width="2"/>
+    <text x="110" y="65" font-family="monospace" font-size="14" fill="#3fb950" text-anchor="middle">.zip</text>
+
+    <rect x="160" y="0" width="60" height="75" rx="4" fill="none" stroke="#d2a8ff" stroke-width="2"/>
+    <text x="190" y="45" font-family="monospace" font-size="14" fill="#d2a8ff" text-anchor="middle">.jpg</text>
+
+    <rect x="0" y="100" width="60" height="75" rx="4" fill="none" stroke="#f0883e" stroke-width="2"/>
+    <text x="30" y="145" font-family="monospace" font-size="14" fill="#f0883e" text-anchor="middle">.docx</text>
+
+    <rect x="80" y="120" width="60" height="75" rx="4" fill="none" stroke="#f778ba" stroke-width="2"/>
+    <text x="110" y="165" font-family="monospace" font-size="14" fill="#f778ba" text-anchor="middle">.txt</text>
+  </g>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="276" width="1280" height="4" fill="url(#accent)" opacity="0.3"/>
+</svg>
