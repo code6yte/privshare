@@ -103,6 +103,12 @@ def upload_file():
             expires_at=expires_at,
             metadata_status=f"{clean_result.status} using {clean_result.cleaner_used}",
         )
+    except RuntimeError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("index"))
+    except Exception:
+        flash("An unexpected error occurred while processing your file. Please try again.", "error")
+        return redirect(url_for("index"))
     finally:
         _safe_unlink(tmp_path)
         _safe_rmtree(cleaned_dir)
@@ -173,6 +179,12 @@ def maintenance_cleanup():
 @app.errorhandler(404)
 def not_found(_):
     return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(_):
+    flash("Something went wrong on our end. Please try again.", "error")
+    return redirect(url_for("index"))
 
 
 def _is_expired(expires_at: str | None) -> bool:
