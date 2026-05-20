@@ -1,102 +1,121 @@
-# Privacy-Preserving File Sharing System
+# PrivShare — Privacy-Preserving File Sharing
 
-A no-signup, password-protected file sharing web app for a cybersecurity lab semester project.
+A no-signup, password-protected file sharing web app. Upload a file, set a password, get a share link. The system strips metadata, encrypts the file, and the receiver needs both the link and the password to decrypt.
 
-The user opens the website, uploads a file, enters a password, and receives a unique share link. The system cleans metadata first, then encrypts the cleaned file with a key derived from the password. The receiver opens the link, enters the same password, and downloads the decrypted file.
+## Core Flow
 
-## Core Idea
-
-```text
-Upload file + password
-        ↓
-Metadata sanitization
-        ↓
-Password-based AES-GCM encryption
-        ↓
-Encrypted file stored on server
-        ↓
-Unique share link generated
-        ↓
-Receiver enters password to decrypt
+```
+Upload file + password → Clean metadata → Encrypt (AES-256-GCM) → Generate share link → Receiver enters password to decrypt
 ```
 
 ## Features
 
-- No sign-up and no user accounts
-- Unique random share links
-- Password-based encryption
+- No sign-up, no user accounts
+- Metadata cleaning before encryption (ExifTool, Pillow, pypdf, Office-cleaner, ZIP-cleaner)
 - AES-256-GCM authenticated encryption
-- PBKDF2-HMAC-SHA256 key derivation
-- Metadata cleaning before encryption
-- SQLite file record database
-- Link expiry support
+- PBKDF2-HMAC-SHA256 key derivation (390,000 iterations)
+- Password never stored or placed in URLs
+- Configurable link expiry
 - Download count tracking
-- Optional ExifTool support
-- CLI helper commands
-- Docker-ready structure
-- Deployment guide included
+- Docker-ready with ExifTool pre-installed
 
-## Important Security Rule
+## Stack
 
-The password is never placed inside the URL and is not stored in the database.
+| Layer | Technology |
+|---|---|
+| Backend | Python Flask + Gunicorn |
+| Encryption | AES-256-GCM + PBKDF2-HMAC-SHA256 |
+| Metadata Cleaning | ExifTool, Pillow, pypdf |
+| Database | SQLite |
+| Frontend | HTML, CSS, JavaScript |
+| Deployment | Docker, Docker Compose, Render, Railway |
 
-The link identifies the encrypted file. The password decrypts it.
+## Supported File Types
+
+`.txt`, `.csv`, `.pdf`, `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.docx`, `.xlsx`, `.pptx`, `.zip`
+
+## Requirements
+
+- Python 3.10+
+- ExifTool (required)
+
+## Install ExifTool
+
+**Linux:**
+```bash
+sudo apt update && sudo apt install -y libimage-exiftool-perl
+```
+
+**macOS:**
+```bash
+brew install exiftool
+```
+
+**Windows:**
+Download from https://exiftool.org/ and add to PATH.
 
 ## Quick Start
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate   # Linux/macOS
-# .venv\Scripts\activate    # Windows PowerShell
+# 1. Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
+# 2. Install dependencies
 pip install -r requirements.txt
+
+# 3. Copy environment config
 cp .env.example .env
+
+# 4. Initialize database
 python cli.py init-db
+
+# 5. Run the server
 python app.py
 ```
 
-Open:
+Open: `http://127.0.0.1:5000`
 
-```text
-http://127.0.0.1:5000
+## Production Run
+
+```bash
+gunicorn -w 2 -b 0.0.0.0:5000 app:app
 ```
 
-## Make It Shareable Over the Internet
+## Docker
 
-For a live demo, deploy the app on a public host or run it through a secure tunnel. See [`DEPLOYMENT.md`](DEPLOYMENT.md).
+```bash
+docker build -t privshare .
+docker run -p 8000:8000 --env-file .env privshare
+```
 
-## Project Documents
+## CLI Commands
 
-- [`PROJECT.md`](PROJECT.md)
-- [`ARCHITECTURE.md`](ARCHITECTURE.md)
-- [`FEATURES.md`](FEATURES.md)
-- [`SECURITY.md`](SECURITY.md)
-- [`THREAT_MODEL.md`](THREAT_MODEL.md)
-- [`API.md`](API.md)
-- [`SETUP.md`](SETUP.md)
-- [`DEPLOYMENT.md`](DEPLOYMENT.md)
-- [`TESTING.md`](TESTING.md)
-- [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md)
-- [`CLI_AGENTS.md`](CLI_AGENTS.md)
+```bash
+python cli.py init-db           # Initialize database
+python cli.py cleanup-expired   # Delete expired files
+python cli.py list-files        # List file records
+python cli.py smoke-test        # Run encryption smoke test
+```
 
-## Default Routes
+## Testing
+
+```bash
+pytest tests/ -v
+```
+
+## Routes
 
 | Route | Method | Purpose |
-|---|---:|---|
+|---|---|---|
 | `/` | GET | Upload form |
 | `/upload` | POST | Clean, encrypt, store, generate link |
 | `/file/<token>` | GET | Password form for receiver |
 | `/file/<token>` | POST | Decrypt and download |
 | `/health` | GET | Health check |
 
-## Recommended Demo File Types
+## Deploy to Render (Free)
 
-- `.jpg`, `.jpeg`, `.png`
-- `.pdf`
-- `.txt`
-
-Other files can still be encrypted and shared, but metadata cleaning may depend on ExifTool support.
-
-## Educational Disclaimer
-
-This is a semester project scaffold. It demonstrates secure design concepts, but production deployment needs hardened storage, malware scanning, rate limiting, HTTPS, monitoring, backups, and professional security review.
+1. Push this repo to GitHub
+2. Go to https://dashboard.render.com/blueprint/new?repo=YOUR_REPO_URL
+3. Connect and deploy — `render.yaml` builds the Docker image automatically
