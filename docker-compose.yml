@@ -1,0 +1,14 @@
+services:
+  privshare:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - privshare_instance:/app/instance
+      - privshare_storage:/app/storage
+
+volumes:
+  privshare_instance:
+  privshare_storage:

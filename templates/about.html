@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}About | PrivShare{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>About PrivShare</h1>
+    <p>PrivShare is a cybersecurity lab project that demonstrates anonymous file sharing with two privacy layers.</p>
+    <ol>
+        <li><strong>Metadata cleaning:</strong> hidden metadata is removed before sharing.</li>
+        <li><strong>Password-based encryption:</strong> the cleaned file is encrypted before storage.</li>
+    </ol>
+    <p>No user account is created. The receiver needs both the unique link and the password.</p>
+</section>
+{% endblock %}

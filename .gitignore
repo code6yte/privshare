@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+instance/
+storage/encrypted_files/*
+storage/tmp/*
+!storage/encrypted_files/.gitkeep
+!storage/tmp/.gitkeep
+.pytest_cache/
+.DS_Store

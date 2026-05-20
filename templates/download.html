@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Download | PrivShare{% endblock %}
+{% block content %}
+<section class="card narrow">
+    <p class="eyebrow">Protected file</p>
+    <h1>{{ filename }}</h1>
+    <p>Enter the password shared by the uploader to decrypt and download this file.</p>
+
+    <form action="{{ url_for('download_file', token=token) }}" method="post" class="form">
+        <label>
+            Password
+            <input type="password" name="password" required autofocus>
+        </label>
+        <button type="submit">Decrypt and Download</button>
+    </form>
+
+    <p class="hint">The link alone is not enough. The password is required for decryption.</p>
+</section>
+{% endblock %}

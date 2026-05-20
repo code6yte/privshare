@@ -1,0 +1,8 @@
+Flask>=3.0,<4.0
+Werkzeug>=3.0,<4.0
+cryptography>=42.0
+Pillow>=10.0
+pypdf>=4.0
+python-dotenv>=1.0
+gunicorn>=21.2
+pytest>=8.0

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not Found | PrivShare{% endblock %}
+{% block content %}
+<section class="card narrow">
+    <h1>File not found</h1>
+    <p>The link is invalid, deleted, or expired.</p>
+    <a href="{{ url_for('index') }}" class="button-link">Go to upload</a>
+</section>
+{% endblock %}

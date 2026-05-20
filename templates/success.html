@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Share Link Ready | PrivShare{% endblock %}
+{% block content %}
+<section class="card success-card">
+    <p class="eyebrow">File protected successfully</p>
+    <h1>Your unique share link is ready</h1>
+    <p>The file was processed with metadata cleaning and password-based encryption.</p>
+
+    <label>
+        Share link
+        <div class="copy-row">
+            <input id="shareLink" value="{{ share_url }}" readonly>
+            <button type="button" onclick="copyShareLink()">Copy</button>
+        </div>
+    </label>
+
+    <div class="notice">
+        <strong>Important:</strong> Do not send the password in the same message as the link. Share it through a separate secure channel.
+    </div>
+
+    <dl class="details">
+        <div><dt>Token</dt><dd>{{ token }}</dd></div>
+        <div><dt>Expires at</dt><dd>{{ expires_at }}</dd></div>
+        <div><dt>Metadata status</dt><dd>{{ metadata_status }}</dd></div>
+    </dl>
+
+    <a href="{{ url_for('index') }}" class="button-link">Upload another file</a>
+</section>
+{% endblock %}
