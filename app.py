@@ -1,5 +1,5 @@
 import io
-import re
+import secrets
 
 import base64
 from datetime import datetime, timedelta, timezone
@@ -25,15 +25,18 @@ Config.ensure_dirs()
 init_db()
 
 
-CUSTOM_TOKEN_RE = re.compile(r"^[a-zA-Z0-9_-]{6,32}$")
+TOKEN_LENGTH_OPTIONS = {6, 8, 12, 16, 24, 32}
 
 
-def resolve_token(custom: str | None) -> tuple[str, bool]:
-    if custom and CUSTOM_TOKEN_RE.match(custom):
-        if get_file_by_token(custom):
-            return "", False
-        return custom, True
-    return generate_token(24), True
+def generate_token_with_length(length: int) -> str:
+    length = max(6, min(length, 32))
+    return secrets.token_urlsafe(length)
+
+
+def resolve_token(length: int | None) -> str:
+    if length is not None:
+        return generate_token_with_length(length)
+    return generate_token(24)
 
 
 def build_share_url(token: str) -> str:
@@ -55,7 +58,7 @@ def upload_file():
     original_filename = request.form.get("filename", "")
     content_type = request.form.get("content_type", "application/octet-stream")
     expiry_hours_raw = request.form.get("expiry_hours", str(Config.DEFAULT_EXPIRY_HOURS))
-    custom_token = request.form.get("custom_token", "").strip()
+    token_length_raw = request.form.get("token_length", "24")
 
     if not ciphertext_file or not salt_b64 or not nonce_b64 or not original_filename:
         return jsonify({"error": "Missing required fields"}), 400
@@ -69,9 +72,12 @@ def upload_file():
     if len(salt) != 16 or len(nonce) != 12:
         return jsonify({"error": "Invalid salt or nonce length"}), 400
 
-    token, token_ok = resolve_token(custom_token or None)
-    if not token_ok:
-        return jsonify({"error": "This custom link name is already taken"}), 409
+    try:
+        token_length = int(token_length_raw)
+    except ValueError:
+        token_length = 24
+
+    token = resolve_token(token_length)
 
     try:
         expiry_hours = max(1, min(int(expiry_hours_raw), 168))

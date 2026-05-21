@@ -132,7 +132,8 @@ function copyShareLink() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const generateBtn = document.getElementById('generateToken');
-    const customTokenInput = document.getElementById('customToken');
+    const tokenLengthInput = document.getElementById('tokenLength');
+    const tokenPreview = document.getElementById('tokenPreview');
     const uploadForm = document.getElementById('uploadForm');
     const uploadBtn = document.getElementById('uploadBtn');
     const progressDiv = document.getElementById('uploadProgress');
@@ -140,10 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressText = document.getElementById('progressText');
     const successResult = document.getElementById('successResult');
 
-    if (generateBtn && customTokenInput) {
-        generateBtn.addEventListener('click', () => {
-            customTokenInput.value = generateMemorableToken();
-        });
+    if (generateBtn && tokenLengthInput) {
+        const showPreview = () => {
+            const len = parseInt(tokenLengthInput.value) || 24;
+            const clamped = Math.max(6, Math.min(len, 32));
+            const token = generateMemorableToken().replace(/-/g, '').substring(0, clamped);
+            tokenPreview.textContent = `Example: ${token}`;
+        };
+        generateBtn.addEventListener('click', showPreview);
+        tokenLengthInput.addEventListener('input', showPreview);
+        showPreview();
     }
 
     if (uploadForm) {
@@ -177,8 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('filename', file.name);
                 formData.append('content_type', file.type || 'application/octet-stream');
                 formData.append('expiry_hours', uploadForm.querySelector('[name="expiry_hours"]').value);
-                const customToken = customTokenInput?.value?.trim();
-                if (customToken) formData.append('custom_token', customToken);
+                formData.append('token_length', tokenLengthInput?.value || '24');
 
                 const resp = await fetch('/upload', { method: 'POST', body: formData });
                 const data = await resp.json();

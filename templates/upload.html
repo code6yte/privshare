@@ -20,12 +20,13 @@
         </label>
 
         <label>
-            Custom link name <span style="color:var(--text-dim);font-weight:400;">(optional)</span>
+            Token length <span style="color:var(--text-dim);font-weight:400;">(6–32 chars)</span>
             <div style="display:flex;gap:0.5rem;">
-                <input type="text" id="customToken" name="custom_token" placeholder="e.g. my-secret-file" style="flex:1;" pattern="[a-zA-Z0-9_-]{6,32}">
-                <button type="button" id="generateToken" style="white-space:nowrap;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;font-weight:500;">Generate</button>
+                <input type="number" id="tokenLength" name="token_length" min="6" max="32" value="24" style="flex:1;">
+                <button type="button" id="generateToken" style="white-space:nowrap;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;font-weight:500;">Preview</button>
             </div>
         </label>
+        <p class="hint" id="tokenPreview" style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text-dim);"></p>
 
         <label>
             Link expiry (hours)
