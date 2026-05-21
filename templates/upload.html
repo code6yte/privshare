@@ -2,48 +2,48 @@
 {% block title %}Upload | PrivShare{% endblock %}
 {% block content %}
 <section class="hero">
-    <div>
-        <p class="eyebrow">Cyber Security Lab Project</p>
-        <h1>Privacy-Preserving File Sharing</h1>
-        <p class="lead">Upload once. Metadata is cleaned, file is encrypted, and you get a unique link to share.</p>
-    </div>
+    <h1>Privacy-Preserving File Sharing</h1>
+    <p class="lead">Upload a file, set a password, and get a share link. Metadata is stripped and the file is encrypted before it leaves your browser.</p>
 </section>
 
 <section class="card">
     <h2>Upload File</h2>
     <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="form">
         <label>
-            Select file
+            File
             <input type="file" name="file" required>
         </label>
 
         <label>
-            Password for encryption
+            Encryption password
             <input type="password" name="password" minlength="8" required placeholder="Minimum 8 characters">
         </label>
 
         <label>
-            Link expiry in hours
+            Link expiry (hours)
             <input type="number" name="expiry_hours" min="1" max="168" value="{{ default_expiry }}">
         </label>
 
-        <button type="submit">Clean + Encrypt + Generate Link</button>
+        <button type="submit">Encrypt &amp; Generate Link</button>
     </form>
-    <p class="hint">Maximum file size: {{ max_mb }} MB. Share the password separately, not inside the link.</p>
+    <p class="hint">Max file size: {{ max_mb }} MB. Share the password through a separate channel.</p>
 </section>
 
-<section class="grid three">
-    <div class="mini-card">
-        <h3>1. Clean</h3>
-        <p>Hidden metadata is removed before sharing.</p>
+<section class="steps">
+    <div class="step">
+        <div class="step-num">01</div>
+        <h3>Clean</h3>
+        <p>Hidden metadata is stripped from the file before encryption.</p>
     </div>
-    <div class="mini-card">
-        <h3>2. Encrypt</h3>
-        <p>The cleaned file is encrypted with your password.</p>
+    <div class="step">
+        <div class="step-num">02</div>
+        <h3>Encrypt</h3>
+        <p>The cleaned file is encrypted with AES-256-GCM using your password.</p>
     </div>
-    <div class="mini-card">
-        <h3>3. Share</h3>
-        <p>A unique link is created for the receiver.</p>
+    <div class="step">
+        <div class="step-num">03</div>
+        <h3>Share</h3>
+        <p>A unique link is generated. The receiver needs both the link and password.</p>
     </div>
 </section>
 {% endblock %}

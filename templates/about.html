@@ -2,12 +2,43 @@
 {% block title %}About | PrivShare{% endblock %}
 {% block content %}
 <section class="card">
-    <h1>About PrivShare</h1>
-    <p>PrivShare is a cybersecurity lab project that demonstrates anonymous file sharing with two privacy layers.</p>
-    <ol>
-        <li><strong>Metadata cleaning:</strong> hidden metadata is removed before sharing.</li>
-        <li><strong>Password-based encryption:</strong> the cleaned file is encrypted before storage.</li>
-    </ol>
-    <p>No user account is created. The receiver needs both the unique link and the password.</p>
+    <h1 style="font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;margin:0 0 0.5rem;letter-spacing:-0.02em;">About PrivShare</h1>
+    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.65;margin:0;">
+        PrivShare is a privacy-focused file sharing tool. It strips hidden metadata from files, encrypts them with a password you choose, and generates a unique share link. The receiver needs both the link and the password to decrypt.
+    </p>
+
+    <div class="about-flow">
+        <span class="flow-step">Upload</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Clean metadata</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Encrypt</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Share link</span>
+    </div>
+
+    <div class="about-section">
+        <h3>How it works</h3>
+        <p>
+            Files can leak private information through hidden metadata — GPS coordinates, device identifiers, author names, and editing history. PrivShare removes this metadata before encryption.
+        </p>
+        <p>
+            The cleaned file is then encrypted using AES-256-GCM with a key derived from your password via PBKDF2-HMAC-SHA256. The password is never stored on the server or placed in the URL.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h3>Stack</h3>
+        <p>
+            Flask backend, AES-256-GCM encryption, ExifTool for metadata cleaning, Pillow for images, pypdf for PDFs, and SQLite for file records.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h3>Source</h3>
+        <p>
+            Built by <a href="https://github.com/code6yte" target="_blank" rel="noopener">@code6yte</a>. View the source on <a href="https://github.com/code6yte/privshare" target="_blank" rel="noopener">GitHub</a>.
+        </p>
+    </div>
 </section>
 {% endblock %}

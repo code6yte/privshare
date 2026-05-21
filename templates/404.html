@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Not Found | PrivShare{% endblock %}
 {% block content %}
-<section class="card narrow">
-    <h1>File not found</h1>
-    <p>The link is invalid, deleted, or expired.</p>
+<section class="card narrow centered">
+    <h1 style="font-family:'JetBrains Mono',monospace;font-size:3rem;font-weight:700;color:var(--text-dim);margin:0;">404</h1>
+    <p style="color:var(--text-muted);margin:0.5rem 0 1.5rem;">File not found. The link may be invalid, deleted, or expired.</p>
     <a href="{{ url_for('index') }}" class="button-link">Go to upload</a>
 </section>
 {% endblock %}

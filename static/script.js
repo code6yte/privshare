@@ -1,12 +1,21 @@
 function copyShareLink() {
     const input = document.getElementById('shareLink');
-    if (!input) return;
-    input.select();
-    input.setSelectionRange(0, 99999);
+    const btn = input.nextElementSibling;
+    if (!input || !btn) return;
+
     navigator.clipboard.writeText(input.value).then(() => {
-        alert('Share link copied. Send the password separately.');
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.style.color = 'var(--success)';
+        btn.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        setTimeout(() => {
+            btn.textContent = original;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
     }).catch(() => {
+        input.select();
+        input.setSelectionRange(0, 99999);
         document.execCommand('copy');
-        alert('Share link copied. Send the password separately.');
     });
 }

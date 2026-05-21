@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Expired | PrivShare{% endblock %}
 {% block content %}
-<section class="card narrow">
-    <h1>Link expired</h1>
-    <p>This file is no longer available because the share link has expired.</p>
+<section class="card narrow centered">
+    <h1 style="font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:600;margin:0 0 0.5rem;">Link expired</h1>
+    <p style="color:var(--text-muted);margin:0 0 1.5rem;">This file is no longer available because the share link has expired.</p>
     <a href="{{ url_for('index') }}" class="button-link">Upload a new file</a>
 </section>
 {% endblock %}
