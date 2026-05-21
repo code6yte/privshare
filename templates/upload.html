@@ -62,6 +62,18 @@
     </div>
 </section>
 
+<section class="card" style="margin-top:1rem;">
+    <h2>Receive a File</h2>
+    <p class="hint" style="margin-bottom:1rem;">Paste a share link or token to decrypt and download a file.</p>
+    <form id="receiveForm" class="form">
+        <label>
+            Share link or token
+            <input type="text" id="receiveInput" placeholder="https://privshare.example.com/file/your-token" pattern="[a-zA-Z0-9_-]{6,32}|https?://.+">
+        </label>
+        <button type="submit" id="receiveBtn">Go to File</button>
+    </form>
+</section>
+
 <div id="successResult" style="display:none;">
     <section class="card" style="margin-top:1rem;">
         <div class="success-icon"></div>

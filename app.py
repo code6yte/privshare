@@ -1,3 +1,4 @@
+import io
 import re
 
 import base64
@@ -145,7 +146,7 @@ def file_data(token: str):
     increment_download_count(token)
     ciphertext = read_encrypted(record["stored_filename"])
     return send_file(
-        ciphertext,
+        io.BytesIO(ciphertext),
         mimetype="application/octet-stream",
         as_attachment=False,
     )

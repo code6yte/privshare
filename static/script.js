@@ -202,4 +202,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const receiveForm = document.getElementById('receiveForm');
+    if (receiveForm) {
+        receiveForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('receiveInput').value.trim();
+            if (!input) return;
+
+            let token = input;
+            if (input.includes('/file/')) {
+                token = input.split('/file/')[1].split('?')[0].split('#')[0];
+            }
+            if (token) {
+                window.location.href = `/file/${token}`;
+            }
+        });
+    }
 });
