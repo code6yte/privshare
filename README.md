@@ -4,7 +4,7 @@
 
 # PrivShare Privacy Preserving File Sharing
 
-A no-signup, password-protected file sharing web app. Upload a file, set a password, get a share link. The system strips metadata, encrypts the file, and the receiver needs both the link and the password to decrypt.
+A  password-protected file sharing web app. Upload a file, set a password, get a share link. The system strips metadata, encrypts the file, and the receiver needs both the link and the password to decrypt.
 
 ## Core Flow
 
