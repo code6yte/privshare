@@ -3,20 +3,28 @@
 {% block content %}
 <section class="hero">
     <h1>Privacy-Preserving File Sharing</h1>
-    <p class="lead">Upload a file, set a password, and get a share link. Metadata is stripped and the file is encrypted before it leaves your browser.</p>
+    <p class="lead">Files are encrypted in your browser before upload. The server never sees your password or plaintext.</p>
 </section>
 
 <section class="card">
     <h2>Upload File</h2>
-    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="form">
+    <form id="uploadForm" class="form">
         <label>
             File
-            <input type="file" name="file" required>
+            <input type="file" id="fileInput" name="file" required>
         </label>
 
         <label>
             Encryption password
-            <input type="password" name="password" minlength="8" required placeholder="Minimum 8 characters">
+            <input type="password" id="passwordInput" minlength="8" required placeholder="Minimum 8 characters">
+        </label>
+
+        <label>
+            Custom link name <span style="color:var(--text-dim);font-weight:400;">(optional)</span>
+            <div style="display:flex;gap:0.5rem;">
+                <input type="text" id="customToken" name="custom_token" placeholder="e.g. my-secret-file" style="flex:1;" pattern="[a-zA-Z0-9_-]{6,32}">
+                <button type="button" id="generateToken" style="white-space:nowrap;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;font-weight:500;">Generate</button>
+            </div>
         </label>
 
         <label>
@@ -24,7 +32,14 @@
             <input type="number" name="expiry_hours" min="1" max="168" value="{{ default_expiry }}">
         </label>
 
-        <button type="submit">Encrypt &amp; Generate Link</button>
+        <div id="uploadProgress" style="display:none;">
+            <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
+                <div id="progressBar" style="height:100%;width:0%;background:var(--accent);transition:width 0.3s;border-radius:2px;"></div>
+            </div>
+            <p class="hint" id="progressText" style="margin-top:0.5rem;">Encrypting...</p>
+        </div>
+
+        <button type="submit" id="uploadBtn">Encrypt &amp; Upload</button>
     </form>
     <p class="hint">Max file size: {{ max_mb }} MB. Share the password through a separate channel.</p>
 </section>
@@ -32,18 +47,44 @@
 <section class="steps">
     <div class="step">
         <div class="step-num">01</div>
-        <h3>Clean</h3>
-        <p>Hidden metadata is stripped from the file before encryption.</p>
+        <h3>Encrypt</h3>
+        <p>Your browser encrypts the file with AES-256-GCM. The server never sees the password.</p>
     </div>
     <div class="step">
         <div class="step-num">02</div>
-        <h3>Encrypt</h3>
-        <p>The cleaned file is encrypted with AES-256-GCM using your password.</p>
+        <h3>Upload</h3>
+        <p>Only the encrypted blob is sent to the server for storage.</p>
     </div>
     <div class="step">
         <div class="step-num">03</div>
         <h3>Share</h3>
-        <p>A unique link is generated. The receiver needs both the link and password.</p>
+        <p>Share the link and password separately. The receiver decrypts in their browser.</p>
     </div>
 </section>
+
+<div id="successResult" style="display:none;">
+    <section class="card" style="margin-top:1rem;">
+        <div class="success-icon"></div>
+        <h1 style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:600;margin:0 0 0.25rem;">File encrypted and uploaded</h1>
+        <p class="hint" style="margin-bottom:1.25rem;">Your file was encrypted in the browser before upload.</p>
+
+        <label>
+            Share link
+            <div class="copy-row">
+                <input id="shareLink" readonly>
+                <button type="button" onclick="copyShareLink()">Copy</button>
+            </div>
+        </label>
+
+        <div class="notice">
+            <strong>Important:</strong> Do not send the password in the same message as the link. Share it through a separate channel.
+        </div>
+
+        <dl class="details">
+            <div><dt>Expires</dt><dd id="resultExpires"></dd></div>
+        </dl>
+
+        <a href="{{ url_for('index') }}" class="button-link">Upload another file</a>
+    </section>
+</div>
 {% endblock %}

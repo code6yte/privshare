@@ -4,16 +4,77 @@
 <section class="card narrow">
     <p class="file-label">Protected file</p>
     <p class="file-name">{{ filename }}</p>
-    <p class="hint" style="margin-bottom:1.25rem;">Enter the password shared by the uploader to decrypt and download.</p>
+    <p class="hint" style="margin-bottom:1.25rem;">Enter the password to decrypt this file in your browser.</p>
 
-    <form action="{{ url_for('download_file', token=token) }}" method="post" class="form">
+    <form id="downloadForm" class="form">
         <label>
             Password
-            <input type="password" name="password" required autofocus>
+            <input type="password" id="passwordInput" required autofocus>
         </label>
-        <button type="submit">Decrypt &amp; Download</button>
+        <div id="downloadProgress" style="display:none;">
+            <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
+                <div id="progressBar" style="height:100%;width:0%;background:var(--accent);transition:width 0.3s;border-radius:2px;"></div>
+            </div>
+            <p class="hint" id="progressText" style="margin-top:0.5rem;">Fetching encrypted file...</p>
+        </div>
+        <button type="submit" id="downloadBtn">Decrypt &amp; Download</button>
     </form>
 
-    <p class="hint">The link alone is not enough. A password is required for decryption.</p>
+    <p class="hint">Decryption happens entirely in your browser. The server never sees your password.</p>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('downloadForm');
+    const passwordInput = document.getElementById('passwordInput');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const progressDiv = document.getElementById('downloadProgress');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const token = '{{ token }}';
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = passwordInput.value;
+        if (!password) return;
+
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = 'Decrypting...';
+        progressDiv.style.display = 'block';
+        progressBar.style.width = '10%';
+        progressText.textContent = 'Fetching encrypted file...';
+
+        try {
+            const metaResp = await fetch(`/api/file/${token}`);
+            if (!metaResp.ok) {
+                const err = await metaResp.json();
+                throw new Error(err.error || 'File not found');
+            }
+            const meta = await metaResp.json();
+
+            progressBar.style.width = '40%';
+            progressText.textContent = 'Downloading encrypted data...';
+
+            const dataResp = await fetch(`/file/${token}/data`);
+            if (!dataResp.ok) throw new Error('Failed to download file data');
+            const ciphertext = await dataResp.arrayBuffer();
+
+            progressBar.style.width = '70%';
+            progressText.textContent = 'Decrypting in browser...';
+
+            const decrypted = await decryptFile(ciphertext, password, meta.salt, meta.nonce);
+
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Download starting...';
+
+            triggerDownload(decrypted, meta.filename);
+        } catch (err) {
+            alert('Error: ' + err.message);
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = 'Decrypt & Download';
+            progressDiv.style.display = 'none';
+        }
+    });
+});
+</script>
 {% endblock %}

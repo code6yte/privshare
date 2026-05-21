@@ -1,16 +1,17 @@
-import io
+import re
+
+import base64
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from flask import Flask, abort, flash, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Flask, abort, jsonify, redirect, render_template, request, send_file, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 
 from cleanup import cleanup_expired_files
 from config import Config
-from crypto_utils import InvalidPassword, encrypt_bytes, decrypt_bytes, generate_token
+from crypto_utils import generate_token
 from db import get_file_by_token, increment_download_count, init_db, insert_file_record
-from metadata_cleaner import clean_metadata
 from storage import read_encrypted, save_encrypted
 
 app = Flask(__name__)
@@ -21,6 +22,17 @@ if Config.TRUST_PROXY_HEADERS:
 
 Config.ensure_dirs()
 init_db()
+
+
+CUSTOM_TOKEN_RE = re.compile(r"^[a-zA-Z0-9_-]{6,32}$")
+
+
+def resolve_token(custom: str | None) -> tuple[str, bool]:
+    if custom and CUSTOM_TOKEN_RE.match(custom):
+        if get_file_by_token(custom):
+            return "", False
+        return custom, True
+    return generate_token(24), True
 
 
 def build_share_url(token: str) -> str:
@@ -36,75 +48,65 @@ def index():
 
 @app.post("/upload")
 def upload_file():
-    uploaded = request.files.get("file")
-    password = request.form.get("password", "")
+    ciphertext_file = request.files.get("file")
+    salt_b64 = request.form.get("salt", "")
+    nonce_b64 = request.form.get("nonce", "")
+    original_filename = request.form.get("filename", "")
+    content_type = request.form.get("content_type", "application/octet-stream")
     expiry_hours_raw = request.form.get("expiry_hours", str(Config.DEFAULT_EXPIRY_HOURS))
+    custom_token = request.form.get("custom_token", "").strip()
 
-    if not uploaded or uploaded.filename == "":
-        flash("Please select a file.", "error")
-        return redirect(url_for("index"))
+    if not ciphertext_file or not salt_b64 or not nonce_b64 or not original_filename:
+        return jsonify({"error": "Missing required fields"}), 400
 
-    if not password or len(password) < 8:
-        flash("Please enter a password with at least 8 characters.", "error")
-        return redirect(url_for("index"))
+    try:
+        salt = base64.b64decode(salt_b64)
+        nonce = base64.b64decode(nonce_b64)
+    except Exception:
+        return jsonify({"error": "Invalid salt or nonce encoding"}), 400
 
-    original_filename = secure_filename(uploaded.filename)
-    if not original_filename:
-        flash("Invalid filename.", "error")
-        return redirect(url_for("index"))
+    if len(salt) != 16 or len(nonce) != 12:
+        return jsonify({"error": "Invalid salt or nonce length"}), 400
+
+    token, token_ok = resolve_token(custom_token or None)
+    if not token_ok:
+        return jsonify({"error": "This custom link name is already taken"}), 409
 
     try:
         expiry_hours = max(1, min(int(expiry_hours_raw), 168))
     except ValueError:
         expiry_hours = Config.DEFAULT_EXPIRY_HOURS
 
-    token = generate_token(24)
-    tmp_path = Config.TMP_DIR / f"upload_{token}_{original_filename}"
-    cleaned_dir = Config.TMP_DIR / f"cleaned_{token}"
+    stored_filename = f"{token}.bin"
 
     try:
-        uploaded.save(tmp_path)
-        clean_result = clean_metadata(tmp_path, cleaned_dir)
-        cleaned_bytes = clean_result.output_path.read_bytes()
-
-        encrypted = encrypt_bytes(cleaned_bytes, password, iterations=Config.PBKDF2_ITERATIONS)
-        stored_filename = f"{token}.bin"
-        save_encrypted(stored_filename, encrypted.ciphertext)
+        save_encrypted(stored_filename, ciphertext_file.read())
 
         now = datetime.now(timezone.utc)
         expires_at = now + timedelta(hours=expiry_hours)
 
         insert_file_record({
             "token": token,
-            "original_filename": original_filename,
+            "original_filename": secure_filename(original_filename),
             "stored_filename": stored_filename,
-            "content_type": uploaded.content_type or "application/octet-stream",
-            "salt": encrypted.salt,
-            "nonce": encrypted.nonce,
+            "content_type": content_type,
+            "salt": salt,
+            "nonce": nonce,
             "created_at": now.isoformat(),
             "expires_at": expires_at.isoformat(),
             "download_count": 0,
-            "metadata_status": f"{clean_result.status} using {clean_result.cleaner_used}: {clean_result.details}",
-            "size_bytes": len(encrypted.ciphertext),
+            "metadata_status": "client-side-encrypted",
+            "size_bytes": ciphertext_file.content_length or 0,
         })
 
         share_url = build_share_url(token)
-        return render_template(
-            "success.html",
-            share_url=share_url,
-            token=token,
-            expires_at=expires_at,
-            metadata_status=f"{clean_result.status} using {clean_result.cleaner_used}",
-        )
-    except RuntimeError as exc:
-        flash(str(exc), "error")
-        return redirect(url_for("index"))
-    except Exception:
-        flash("An unexpected error occurred while processing your file. Please try again.", "error")
-        return redirect(url_for("index"))
-    finally:
-        _safe_unlink(tmp_path)
-        _safe_rmtree(cleaned_dir)
+        return jsonify({
+            "share_url": share_url,
+            "token": token,
+            "expires_at": expires_at.isoformat(),
+        })
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.get("/file/<token>")
@@ -117,38 +119,35 @@ def download_page(token: str):
     return render_template("download.html", token=token, filename=record["original_filename"])
 
 
-@app.post("/file/<token>")
-def download_file(token: str):
+@app.get("/api/file/<token>")
+def file_metadata(token: str):
     record = get_file_by_token(token)
     if not record:
         abort(404)
     if _is_expired(record["expires_at"]):
-        return render_template("expired.html"), 410
+        return jsonify({"error": "Link expired"}), 410
+    return jsonify({
+        "filename": record["original_filename"],
+        "content_type": record["content_type"],
+        "salt": base64.b64encode(record["salt"]).decode(),
+        "nonce": base64.b64encode(record["nonce"]).decode(),
+        "size_bytes": record["size_bytes"],
+    })
 
-    password = request.form.get("password", "")
-    if not password:
-        flash("Password is required.", "error")
-        return redirect(url_for("download_page", token=token))
 
-    ciphertext = read_encrypted(record["stored_filename"])
-    try:
-        plaintext = decrypt_bytes(
-            ciphertext,
-            password,
-            salt=record["salt"],
-            nonce=record["nonce"],
-            iterations=Config.PBKDF2_ITERATIONS,
-        )
-    except InvalidPassword:
-        flash("Invalid password or corrupted file.", "error")
-        return redirect(url_for("download_page", token=token))
-
+@app.get("/file/<token>/data")
+def file_data(token: str):
+    record = get_file_by_token(token)
+    if not record:
+        abort(404)
+    if _is_expired(record["expires_at"]):
+        return jsonify({"error": "Link expired"}), 410
     increment_download_count(token)
+    ciphertext = read_encrypted(record["stored_filename"])
     return send_file(
-        io.BytesIO(plaintext),
-        as_attachment=True,
-        download_name=record["original_filename"],
-        mimetype=record["content_type"] or "application/octet-stream",
+        ciphertext,
+        mimetype="application/octet-stream",
+        as_attachment=False,
     )
 
 
@@ -164,7 +163,6 @@ def health():
 
 @app.post("/maintenance/cleanup-expired")
 def maintenance_cleanup():
-    # For classroom/demo use only. In production, protect this endpoint or remove it.
     removed = cleanup_expired_files()
     return jsonify({"removed": removed})
 
@@ -176,34 +174,10 @@ def not_found(_):
 
 @app.errorhandler(500)
 def server_error(_):
-    flash("Something went wrong on our end. Please try again.", "error")
-    return redirect(url_for("index"))
+    return jsonify({"error": "Internal server error"}), 500
 
 
 def _is_expired(expires_at: str | None) -> bool:
     if not expires_at:
         return False
     return datetime.fromisoformat(expires_at) < datetime.now(timezone.utc)
-
-
-def _safe_unlink(path: Path) -> None:
-    try:
-        if path.exists():
-            path.unlink()
-    except Exception:
-        pass
-
-
-def _safe_rmtree(path: Path) -> None:
-    try:
-        if path.exists():
-            for item in path.iterdir():
-                if item.is_file():
-                    item.unlink()
-            path.rmdir()
-    except Exception:
-        pass
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
