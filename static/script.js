@@ -216,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = document.getElementById('receiveInput').value.trim();
             if (!input) return;
 
-            let token = input;
+            let token = input.toLowerCase();
             if (input.includes('/file/')) {
-                token = input.split('/file/')[1].split('?')[0].split('#')[0];
+                token = input.split('/file/')[1].split('?')[0].split('#')[0].toLowerCase();
             }
             if (token) {
                 window.location.href = `/file/${token}`;

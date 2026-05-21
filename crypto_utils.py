@@ -27,7 +27,7 @@ class EncryptionResult:
 
 def generate_token(length: int = 32) -> str:
     """Generate a URL-safe token for share links."""
-    return secrets.token_urlsafe(length)
+    return secrets.token_urlsafe(length).lower()
 
 
 def derive_key(password: str, salt: bytes, iterations: int = DEFAULT_ITERATIONS) -> bytes:

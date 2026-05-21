@@ -30,7 +30,7 @@ TOKEN_LENGTH_OPTIONS = {6, 8, 12, 16, 24, 32}
 
 def generate_token_with_length(length: int) -> str:
     length = max(6, min(length, 32))
-    return secrets.token_urlsafe(length)
+    return secrets.token_urlsafe(length).lower()
 
 
 def resolve_token(length: int | None) -> str:
@@ -118,6 +118,7 @@ def upload_file():
 
 @app.get("/file/<token>")
 def download_page(token: str):
+    token = token.lower()
     record = get_file_by_token(token)
     if not record:
         abort(404)
@@ -128,6 +129,7 @@ def download_page(token: str):
 
 @app.get("/api/file/<token>")
 def file_metadata(token: str):
+    token = token.lower()
     record = get_file_by_token(token)
     if not record:
         abort(404)
@@ -144,6 +146,7 @@ def file_metadata(token: str):
 
 @app.get("/file/<token>/data")
 def file_data(token: str):
+    token = token.lower()
     record = get_file_by_token(token)
     if not record:
         abort(404)
