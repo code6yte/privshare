@@ -23,13 +23,6 @@ Config.ensure_dirs()
 init_db()
 
 
-def allowed_file(filename: str) -> bool:
-    if "." not in filename:
-        return False
-    extension = filename.rsplit(".", 1)[1].lower()
-    return extension in Config.ALLOWED_EXTENSIONS
-
-
 def build_share_url(token: str) -> str:
     if Config.BASE_URL:
         return f"{Config.BASE_URL}/file/{token}"
@@ -56,8 +49,8 @@ def upload_file():
         return redirect(url_for("index"))
 
     original_filename = secure_filename(uploaded.filename)
-    if not original_filename or not allowed_file(original_filename):
-        flash("This file type is not allowed for the demo.", "error")
+    if not original_filename:
+        flash("Invalid filename.", "error")
         return redirect(url_for("index"))
 
     try:

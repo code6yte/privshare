@@ -36,7 +36,16 @@ Upload file + password → Clean metadata → Encrypt (AES-256-GCM) → Generate
 
 ## Supported File Types
 
-`.txt`, `.csv`, `.pdf`, `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.docx`, `.xlsx`, `.pptx`, `.zip`
+**All file types are allowed.** Metadata cleaning applies where possible:
+
+| File Type | Extensions | Metadata Cleaner |
+|---|---|---|
+| Images | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` | ExifTool → Pillow fallback |
+| PDF | `.pdf` | ExifTool → pypdf fallback |
+| Office | `.docx`, `.xlsx`, `.pptx` | docProps XML stripper |
+| Archives | `.zip` | Extract → clean contents → repack |
+| Plain text | `.txt`, `.csv` | Native (no metadata to strip) |
+| Other | any extension | Copied as-is, then encrypted |
 
 ## Requirements
 

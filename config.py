@@ -18,10 +18,7 @@ class Config:
     PBKDF2_ITERATIONS = int(os.getenv("PBKDF2_ITERATIONS", "390000"))
     TRUST_PROXY_HEADERS = os.getenv("TRUST_PROXY_HEADERS", "0") == "1"
 
-    ALLOWED_EXTENSIONS = {
-        "txt", "pdf", "png", "jpg", "jpeg", "gif", "webp",
-        "docx", "xlsx", "pptx", "csv", "zip"
-    }
+    # All file types allowed. Metadata cleaning applies to supported types only.
 
     @classmethod
     def ensure_dirs(cls):
